@@ -10,13 +10,13 @@ void Swap(HPDataType* p1, HPDataType* p2)
 void AdjustDown(HPDataType* a, int n, int root)
 {
 	int parent = root;
-	int child = parent * 2 + 1;//����
+	int child = parent * 2 + 1;
 	while (child < n)
 	{
-		//�ҳ����Һ�������С��
+		
 		if (child + 1 < n && a[child + 1] < a[child])
 			child++;
-		//�������С�ڸ����򽻻�
+		
 		if (a[child] < a[parent])
 		{
 			Swap(&a[child], &a[parent]);
