@@ -2,14 +2,14 @@
 
 [toc]
 
+## 1.前言
+
 > + 本文中，我们使用`KV`实现的AVL树。
 > + **源码链接放在文章结尾**。
 
-## 1.前言
-
 **AVL树**（**Adelson-Velsky and Landis Tree**）是一种**自平衡的二叉搜索树（BST）**，它基于二叉搜索树并通过平衡而得到。
 
-[点我进入**二叉搜索树**的世界](https://blog.csdn.net/2301_80030944/article/details/143752509)
+AVL树的**增删查改**都是基于**二叉搜索树**的，如果不了解二叉搜索树，[点我进入**二叉搜索树**的世界](https://blog.csdn.net/2301_80030944/article/details/143752509)
 
 + 在前面的学习中我们提到，二叉搜索树可以提高搜索数据的效率，但在数据有序的情况下会退化为单支树，此时在树中查找元素就得遍历一整个分支，时间复杂度也会退化至O(N)。
 + 如果有一种算法，可以使二叉搜索树时刻保持左右子树的平衡，就可以避免这种最坏情况。
@@ -59,13 +59,10 @@ struct AVLTreeNode
    + 对于每个节点，比较其键 `kv.first` 来决定插入到左子树还是右子树。
    + 如果树中已经存在相同的键值对（即 `kv.first == cur->_kv.first`），直接返回 `false`，表示不插入重复的元素。
 2. **更新平衡因子**：
-   + 插入节点后，父节点的平衡因子需要更新。初始时假设父节点的平衡因子为 `0`，如果插入的节点是父节点的左子节点，父节点的平衡因子减 `1`，否则增 `1`。
-   + 如果更新后父节点的平衡因子为 `1` 或 `-1`，表示当前树是平衡的，因此继续向上回溯。
-   + 如果平衡因子的值为 `2` 或 `-2`，则说明树失衡，需要通过旋转来恢复平衡。
-3. **旋转操作**：
-4. **退出更新**：
-   + 如果父节点的平衡因子恢复到 `0`，说明树已经恢复平衡，循环提前退出。
-   + 如果旋转操作恢复了平衡，树也会恢复到平衡状态，循环同样会停止。
+   + 如果插入的节点是父节点的左子节点，父节点的平衡因子减 `1`，如果插入的节点是父节点的右子节点，父节点的平衡因子增 `1`。
+   + 如果更新后父节点的平衡因子的值为 `0`，则说明树的高度没变，更新停止。
+   + 如果更新后父节点的平衡因子的值为 `1` 或 `-1`，则说明树的高度发生变化，因此继续向上回溯。
+   + 如果更新后父节点的平衡因子的值为 `2` 或 `-2`，则说明树失衡，**旋转**处理后树的高度恢复到插入前，更新停止。
 
 ```cpp
 template<class K, class V>
@@ -273,4 +270,105 @@ void RotateLR(Node* parent)
 + 旋转后，需要根据左子树的右子树的平衡因子 `bf` 来调整旋转后节点的平衡因子。
 
 ## 6.删除
+
+**思路**：
+
+1. **查找删除的节点**
+2. **更新平衡因子**
+   + 如果删除的节点是父节点的左子节点，父节点的平衡因子增 `1`，如果删除的节点是父节点的右子节点，父节点的平衡因子减 `1`。
+   + 如果更新后父节点的平衡因子的值为 `1` 或 `-1`，则说明树的高度没变，更新停止。
+   + 如果更新后父节点的平衡因子的值为 `0`，则说明树的高度发生变化，因此继续向上回溯。
+   + 如果更新后父节点的平衡因子的值为 `2` 或 `-2`，则说明树失衡，**旋转**处理后树的高度恢复到插入前，更新停止。
+3. **真正删除节点**
+
+```cpp
+bool Erase(const K& key)
+{
+	//1.find erase node
+	Node* target = Find(key);
+	if (!target)	return false;
+
+	//2.update balance factor
+	Node* parent = target->_parent;
+	Node* child = target;
+	while (parent)
+	{
+		if (child == parent->_left)	parent->_bf++;
+		else parent->_bf--;
+
+		if (parent->_bf == 1 || parent->_bf == -1) break;
+		else if (parent->_bf == 0) child = parent, parent = parent->_parent;
+		else if (parent->_bf == 2 || parent->_bf == -2)
+		{
+			if (parent->_bf == 2)
+			{
+				if (child->_bf == 1) RotateL(parent);
+				else if (child->_bf == -1) RotateRL(parent);
+			}
+			else if(parent->_bf == -2)
+			{
+				if (child->_bf == -1) RotateR(parent);
+				else if (child->_bf == 1) RotateLR(parent);
+			}
+		}
+	}
+
+	//3. delete node
+	DeleteNode(target);
+    return true;
+}
+
+Node* Find(const K& key)
+{
+	Node* cur = _root;
+	while (cur)
+	{
+		if (key > cur->_key)	cur = cur->_right;
+		else if (key < cur->_key) cur = cur->_left;
+		else return cur;
+	}
+	return nullptr;
+}
+
+void DeleteNode(const Node& target)
+{
+	Node* parent = target->_parent;
+	if (!target->_left && !target->_right)	//leaf node
+	{
+		if (parent)
+		{
+			if (target == parent->_left)	parent->_left = nullptr;
+			else parent->_right = nullptr;
+		}
+		else _root = nullptr;
+		delete target;
+	}
+	else if (!target->_left || !target->_right) //only one child node
+	{
+		Node* child = target->_left ? target->_left : target->_right;
+		if (parent)
+		{
+			if (target == parent->_left)	parent->_left = child;
+			else parent->_right = child;
+		}
+		else _root = child;
+		child->_parent = parent;
+		delete target;
+	}
+	else //two child node
+	{
+		Node* minNode = target->_right;
+		while (minNode) minNode = minNode->_left;
+		target->_kv = minNode->_kv;
+		DeleteNode(minNode);
+	}
+}
+```
+
+## 7.总结
+
++ **AVL树**（平衡二叉搜索树）通过平衡因子来调节树的平衡。
++ 比起二叉搜索树，AVL树多出来的是旋转的操作，特别是双旋，需要精准的把控旋转后的平衡因子，使AVL树实现起来很复杂。
+
+## 8.源码链接
 

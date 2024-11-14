@@ -1,10 +1,9 @@
 #pragma once
-#include<iostream>
-using namespace std;
 
 template<class K, class V>
 struct AVLTreeNode
 {
+
 	AVLTreeNode<K, V>* _left;
 	AVLTreeNode<K, V>* _right;
 	AVLTreeNode<K, V>* _parent;	//Three-pronged chain
@@ -101,8 +100,90 @@ public:
 	{
 		return _Height(_root);
 	}
+
+	Node* Find(const K& key)
+	{
+		Node* cur = _root;
+		while (cur)
+		{
+			if (key > cur->_key)	cur = cur->_right;
+			else if (key < cur->_key) cur = cur->_left;
+			else return cur;
+		}
+		return nullptr;
+	}
+
+	bool Erase(const K& key)
+	{
+		//1.find erase node
+		Node* target = Find(key);
+		if (!target)	return false;
+
+		//2.update balance factor
+		Node* parent = target->_parent;
+		Node* child = target;
+		while (parent)
+		{
+			if (child == parent->_left)	parent->_bf++;
+			else parent->_bf--;
+
+			if (parent->_bf == 1 || parent->_bf == -1) break;
+			else if (parent->_bf == 0) child = parent, parent = parent->_parent;
+			else if (parent->_bf == 2 || parent->_bf == -2)
+			{
+				if (parent->_bf == 2)
+				{
+					if (child->_bf == 1) RotateL(parent);
+					else if (child->_bf == -1) RotateRL(parent);
+				}
+				else if(parent->_bf == -2)
+				{
+					if (child->_bf == -1) RotateR(parent);
+					else if (child->_bf == 1) RotateLR(parent);
+				}
+			}
+		}
+
+		//3. delete node
+		DeleteNode(target);
+		return true;
+	}
 private:
 	Node* _root = nullptr;
+
+	void DeleteNode(const Node& target)
+	{
+		Node* parent = target->_parent;
+		if (!target->_left && !target->_right)	//leaf node
+		{
+			if (parent)
+			{
+				if (target == parent->_left)	parent->_left = nullptr;
+				else parent->_right = nullptr;
+			}
+			else _root = nullptr;
+			delete target;
+		}
+		else if (!target->_left || !target->_right) //only one child node
+		{
+			Node* child = target->_left ? target->_left : target->_right;
+			if (parent)
+			{
+				if (target == parent->_left)	parent->_left = child;
+				else parent->_right = child;
+			}
+			else _root = child;
+			child->_parent = parent;
+			delete target;
+		}
+		else //two child node
+		{
+			Node* minNode = target->_right;
+			while (minNode) minNode = minNode->_left;
+			target->_kv = minNode->_kv;
+			DeleteNode(minNode);
+		}
+	}
 
 	void RotateL(Node* parent)
 	{
