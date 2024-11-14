@@ -269,7 +269,31 @@ void RotateLR(Node* parent)
 + **左右旋** 通过两个旋转来恢复平衡，首先是左旋（对左子树进行旋转），然后是右旋（对父节点进行旋转）。
 + 旋转后，需要根据左子树的右子树的平衡因子 `bf` 来调整旋转后节点的平衡因子。
 
-## 6.删除
+## 6.验证平衡
+
+```cpp
+bool _IsBalance(Node* root)
+{
+	if (!root)	return true;
+
+	int leftHeight = _Height(root->_left);
+	int rightHeight = _Height(root->_right);
+
+	return abs(leftHeight - rightHeight) < 2 && _IsBalance(root->_left) && _IsBalance(root->_right);
+}
+
+int _Height(Node* root)
+{
+	if (!root) return 0;
+
+	int leftHeight = _Height(root->_left);
+	int rightHeight = _Height(root->_right);
+
+	return leftHeight > rightHeight ? leftHeight + 1 : rightHeight + 1;
+}
+```
+
+## 7.删除
 
 **思路**：
 
@@ -365,10 +389,10 @@ void DeleteNode(const Node& target)
 }
 ```
 
-## 7.总结
+## 8.总结
 
 + **AVL树**（平衡二叉搜索树）通过平衡因子来调节树的平衡。
 + 比起二叉搜索树，AVL树多出来的是旋转的操作，特别是双旋，需要精准的把控旋转后的平衡因子，使AVL树实现起来很复杂。
 
-## 8.源码链接
+## 9.源码链接
 

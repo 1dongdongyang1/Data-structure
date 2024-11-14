@@ -1,4 +1,7 @@
 #pragma once
+#include <iostream>
+#include <utility>
+using namespace std;
 
 template<class K, class V>
 struct AVLTreeNode
@@ -106,8 +109,8 @@ public:
 		Node* cur = _root;
 		while (cur)
 		{
-			if (key > cur->_key)	cur = cur->_right;
-			else if (key < cur->_key) cur = cur->_left;
+			if (key > cur->_kv.first)	cur = cur->_right;
+			else if (key < cur->_kv.first) cur = cur->_left;
 			else return cur;
 		}
 		return nullptr;
@@ -151,7 +154,7 @@ public:
 private:
 	Node* _root = nullptr;
 
-	void DeleteNode(const Node& target)
+	void DeleteNode(Node* target)
 	{
 		Node* parent = target->_parent;
 		if (!target->_left && !target->_right)	//leaf node
@@ -179,7 +182,7 @@ private:
 		else //two child node
 		{
 			Node* minNode = target->_right;
-			while (minNode) minNode = minNode->_left;
+			while (minNode->_left) minNode = minNode->_left;
 			target->_kv = minNode->_kv;
 			DeleteNode(minNode);
 		}
@@ -307,5 +310,7 @@ void TestAVLTree()
 	}
 	t.InOrder();
 	cout << t.IsBalance() << endl;
-	cout << t.Height() << endl;
+	cout << t.Erase(2) << endl;
+	cout << t.IsBalance() << endl;
+
 }
