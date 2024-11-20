@@ -347,9 +347,9 @@ Node* Find(const K& key)
 	Node* cur = _root;
 	while (cur)
 	{
-		if (key > cur->_key)	cur = cur->_right;
-		else if (key < cur->_key) cur = cur->_left;
-		else return cur;
+		if (key > cur->_kv.first)	cur = cur->_right;
+        else if (key < cur->_kv.first) cur = cur->_left;
+        else return cur;
 	}
 	return nullptr;
 }
@@ -382,7 +382,7 @@ void DeleteNode(const Node& target)
 	else //two child node
 	{
 		Node* minNode = target->_right;
-		while (minNode) minNode = minNode->_left;
+		while (minNode->_left) minNode = minNode->_left;
 		target->_kv = minNode->_kv;
 		DeleteNode(minNode);
 	}
@@ -396,3 +396,4 @@ void DeleteNode(const Node& target)
 
 ## 9.源码链接
 
+[源码链接](https://github.com/1dongdongyang1/Data-structure/blob/master/AVLTree/AVLTree_KV.hpp)

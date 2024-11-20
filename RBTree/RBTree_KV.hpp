@@ -78,14 +78,14 @@ public:
 				}
 				else //uncle does not exist or is black
 				{
-					//Case 3
+					
 					if (cur == parent->_right)
 					{
 						RotateL(parent);
 						swap(parent, cur);
 					}
 
-					//Case 2 or transformed from Case 3
+					
 					RotateR(grandfather);
 					grandfather->_col = RED;
 					parent->_col = BLACK;
@@ -97,7 +97,7 @@ public:
 			else //grandfather->_right == parent
 			{
 				Node* uncle = grandfather->_left;
-				if (uncle&& uncle->_col = RED)
+				if (uncle&& uncle->_col == RED)
 				{
 					parent->_col = uncle->_col = BLACK;
 					grandfather->_col = RED;
@@ -107,7 +107,7 @@ public:
 				}
 				else
 				{
-					if (cur = parent->_left)
+					if (cur == parent->_left)
 					{
 						RotateR(parent);
 						swap(parent, cur);
